@@ -123,7 +123,7 @@ namespace Nancy.ModelBinding
 
                         foreach (var modelProperty in bindingContext.ValidModelProperties)
                         {
-                            var existingCollectionValue = modelProperty.GetValue(genericinstance, null);
+                            var existingCollectionValue = modelProperty.GetValue(genericinstance);
 
                             var collectionStringValue = GetValue(modelProperty.Name, bindingContext, i);
 
@@ -146,7 +146,7 @@ namespace Nancy.ModelBinding
                 {
                     foreach (var modelProperty in bindingContext.ValidModelProperties)
                     {
-                        var existingValue = modelProperty.GetValue(bindingContext.Model, null);
+                        var existingValue = modelProperty.GetValue(bindingContext.Model);
 
                         var stringValue = GetValue(modelProperty.Name, bindingContext);
 
@@ -178,7 +178,7 @@ namespace Nancy.ModelBinding
             return bindingContext.Model;
         }
 
-        private bool BindingValueIsValid(string bindingValue, object existingValue, PropertyInfo modelProperty, BindingContext bindingContext)
+        private bool BindingValueIsValid(string bindingValue, object existingValue, BindingPropertyInfo modelProperty, BindingContext bindingContext)
         {
             return (!String.IsNullOrEmpty(bindingValue) &&
                     (IsDefaultValue(existingValue, modelProperty.PropertyType) ||
@@ -264,7 +264,7 @@ namespace Nancy.ModelBinding
                 foreach (var modelProperty in bindingContext.ValidModelProperties)
                 {
                     var existingValue =
-                        modelProperty.GetValue(bindingContext.Model, null);
+                        modelProperty.GetValue(bindingContext.Model);
 
                     if (IsDefaultValue(existingValue, modelProperty.PropertyType) || bindingContext.Configuration.Overwrite)
                     {
@@ -301,7 +301,7 @@ namespace Nancy.ModelBinding
 
             foreach (var modelProperty in bindingContext.ValidModelProperties)
             {
-                var existingValue = modelProperty.GetValue(genericTypeInstance, null);
+                var existingValue = modelProperty.GetValue(genericTypeInstance);
 
                 if (IsDefaultValue(existingValue, modelProperty.PropertyType) || bindingContext.Configuration.Overwrite)
                 {
@@ -310,11 +310,11 @@ namespace Nancy.ModelBinding
             }
         }
 
-        private static void CopyValue(PropertyInfo modelProperty, object source, object destination)
+        private static void CopyValue(BindingPropertyInfo modelProperty, object source, object destination)
         {
-            var newValue = modelProperty.GetValue(source, null);
+            var newValue = modelProperty.GetValue(source);
 
-            modelProperty.SetValue(destination, newValue, null);
+            modelProperty.SetValue(destination, newValue);
         }
 
         private static bool IsDefaultValue(object existingValue, Type propertyType)
@@ -332,7 +332,7 @@ namespace Nancy.ModelBinding
                 Context = context,
                 DestinationType = modelType,
                 Model = CreateModel(modelType, genericType, instance),
-                ValidModelProperties = GetProperties(modelType, genericType, blackList),
+                ValidModelProperties = GetProperties(modelType, genericType, blackList).ToList(),
                 RequestData = this.GetDataFields(context),
                 GenericType = genericType,
                 TypeConverters = this.typeConverters.Concat(this.defaults.DefaultTypeConverters),
@@ -363,7 +363,7 @@ namespace Nancy.ModelBinding
                     memberName => (string)dictionary[memberName]);
         }
 
-        private static void BindProperty(PropertyInfo modelProperty, string stringValue, BindingContext context)
+        private static void BindProperty(BindingPropertyInfo modelProperty, string stringValue, BindingContext context)
         {
             var destinationType = modelProperty.PropertyType;
 
@@ -387,7 +387,7 @@ namespace Nancy.ModelBinding
             }
         }
 
-        private static void BindProperty(PropertyInfo modelProperty, string stringValue, BindingContext context, object genericInstance)
+        private static void BindProperty(BindingPropertyInfo modelProperty, string stringValue, BindingContext context, object genericInstance)
         {
             var destinationType = modelProperty.PropertyType;
 
@@ -411,26 +411,18 @@ namespace Nancy.ModelBinding
             }
         }
 
-        private static void SetPropertyValue(PropertyInfo modelProperty, object model, object value)
+        private static void SetPropertyValue(BindingPropertyInfo modelProperty, object model, object value)
         {
             // TODO - catch reflection exceptions?
-            modelProperty.SetValue(model, value, null);
+            modelProperty.SetValue(model, value);
         }
 
-        private static IEnumerable<PropertyInfo> GetProperties(Type modelType, Type genericType, IEnumerable<string> blackList)
+        private static IEnumerable<BindingPropertyInfo> GetProperties(Type modelType, Type genericType, IEnumerable<string> blackList)
         {
-            if (genericType != null)
-            {
-                return genericType
-                .GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanWrite && !blackList.Contains(p.Name, StringComparer.InvariantCulture))
-                .Where(property => !property.GetIndexParameters().Any());
-            }
-            else
-            {
-                return modelType
-                .GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanWrite && !blackList.Contains(p.Name, StringComparer.InvariantCulture))
-                .Where(property => !property.GetIndexParameters().Any());
-            }
+            var blackListHash = new HashSet<string>(blackList, StringComparer.InvariantCulture);
+
+            return BindingPropertyInfo.Collect(genericType ?? modelType)
+                .Where(member => !blackListHash.Contains(member.Name));
         }
 
         private static object CreateModel(Type modelType, Type genericType, object instance)
