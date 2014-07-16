@@ -1,238 +1,235 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Xml.Serialization;
-using Nancy.ModelBinding;
-using Xunit;
-using Xunit.Sdk;
-
-namespace Nancy.Tests.Unit.ModelBinding
+﻿namespace Nancy.Tests.Unit.ModelBinding
 {
-	public class BindingPropertyInfoFixture
-	{
-		[Fact]
-		public void Should_return_MemberInfo_for_properties_or_fields()
-		{
-			// Given
-			var type = typeof(TestModel);
-			var underlyingFieldInfo = type.GetFields().First();
-			var underlyingPropertyInfo = type.GetProperties().First();
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Xml.Serialization;
+    using Nancy.ModelBinding;
+    using Xunit;
+    using Xunit.Sdk;
 
-			// When
-			var fieldInfo = new BindingPropertyInfo(underlyingFieldInfo);
-			var propertyInfo = new BindingPropertyInfo(underlyingPropertyInfo);
+    public class BindingPropertyInfoFixture
+    {
+        [Fact]
+        public void Should_return_MemberInfo_for_properties_or_fields()
+        {
+            // Given
+            var type = typeof(TestModel);
+            var underlyingFieldInfo = type.GetFields().First();
+            var underlyingPropertyInfo = type.GetProperties().First();
 
-			// Then
-			fieldInfo.MemberInfo.ShouldEqual(underlyingFieldInfo);
-			propertyInfo.MemberInfo.ShouldEqual(underlyingPropertyInfo);
-		}
+            // When
+            var fieldInfo = new BindingPropertyInfo(underlyingFieldInfo);
+            var propertyInfo = new BindingPropertyInfo(underlyingPropertyInfo);
 
-		[Fact]
-		public void Should_return_Name_for_properties_or_fields()
-		{
-			// Given
-			var type = typeof(TestModel);
-			var underlyingFieldInfo = type.GetFields().First();
-			var underlyingPropertyInfo = type.GetProperties().First();
+            // Then
+            fieldInfo.MemberInfo.ShouldEqual(underlyingFieldInfo);
+            propertyInfo.MemberInfo.ShouldEqual(underlyingPropertyInfo);
+        }
 
-			// When
-			var fieldInfo = new BindingPropertyInfo(underlyingFieldInfo);
-			var propertyInfo = new BindingPropertyInfo(underlyingPropertyInfo);
+        [Fact]
+        public void Should_return_Name_for_properties_or_fields()
+        {
+            // Given
+            var type = typeof(TestModel);
+            var underlyingFieldInfo = type.GetFields().First();
+            var underlyingPropertyInfo = type.GetProperties().First();
 
-			// Then
-			fieldInfo.Name.ShouldEqual(underlyingFieldInfo.Name);
-			propertyInfo.Name.ShouldEqual(underlyingPropertyInfo.Name);
-		}
+            // When
+            var fieldInfo = new BindingPropertyInfo(underlyingFieldInfo);
+            var propertyInfo = new BindingPropertyInfo(underlyingPropertyInfo);
 
-		[Fact]
-		public void Should_return_PropertyType_for_properties_or_fields()
-		{
-			// Given
-			var properties = BindingPropertyInfo.Collect<TestModel>();
+            // Then
+            fieldInfo.Name.ShouldEqual(underlyingFieldInfo.Name);
+            propertyInfo.Name.ShouldEqual(underlyingPropertyInfo.Name);
+        }
 
-			// When
+        [Fact]
+        public void Should_return_PropertyType_for_properties_or_fields()
+        {
+            // Given
+            var properties = BindingPropertyInfo.Collect<TestModel>();
 
-			// Then
-			properties.ShouldHaveCount(4);
+            // When
 
-			foreach (var propInfo in properties)
-			{
-				if (propInfo.Name.StartsWith("Int"))
-					propInfo.PropertyType.ShouldEqual(typeof(int));
-				else if (propInfo.Name.StartsWith("String"))
-					propInfo.PropertyType.ShouldEqual(typeof(string));
-				else
-					throw new AssertException("Internal error in unit test: Test model property/field name does not follow the expected convention: " + propInfo.Name);
-			}
-		}
+            // Then
+            properties.ShouldHaveCount(4);
 
-		[Fact]
-		public void Should_get_fields()
-		{
-			// Given
-			var propInfo = BindingPropertyInfo.Collect<TestModel>().Where(prop => prop.Name.EndsWith("Field"));
-			var model = new TestModel();
+            foreach (var propInfo in properties)
+            {
+                if (propInfo.Name.StartsWith("Int"))
+                {
+                    propInfo.PropertyType.ShouldEqual(typeof(int));
+                }
+                else if (propInfo.Name.StartsWith("String"))
+                {
+                    propInfo.PropertyType.ShouldEqual(typeof(string));
+                }
+                else
+                {
+                    throw new AssertException("Internal error in unit test: Test model property/field name does not follow the expected convention: " + propInfo.Name);
+                }
+            }
+        }
 
-			// When
-			model.IntField = 669;
-			model.StringField = "testing";
+        [Fact]
+        public void Should_get_fields()
+        {
+            // Given
+            var propInfo = BindingPropertyInfo.Collect<TestModel>().Where(prop => prop.Name.EndsWith("Field"));
+            var model = new TestModel();
 
-			// Then
-			propInfo
-				.Single(prop => prop.PropertyType == typeof(int))
-				.GetValue(model)
-				.ShouldEqual(669);
+            // When
+            model.IntField = 669;
+            model.StringField = "testing";
 
-			propInfo
-				.Single(prop => prop.PropertyType == typeof(string))
-				.GetValue(model)
-				.ShouldEqual("testing");
-		}
+            // Then
+            propInfo.Single(prop => prop.PropertyType == typeof(int))
+                .GetValue(model)
+                .ShouldEqual(669);
 
-		[Fact]
-		public void Should_set_fields()
-		{
-			// Given
-			var propInfo = BindingPropertyInfo.Collect<TestModel>().Where(prop => prop.Name.EndsWith("Field"));
-			var model = new TestModel();
+            propInfo.Single(prop => prop.PropertyType == typeof(string))
+                .GetValue(model)
+                .ShouldEqual("testing");
+        }
 
-			// When
-			propInfo
-				.Single(prop => prop.PropertyType == typeof(int))
-				.SetValue(model, 42);
+        [Fact]
+        public void Should_set_fields()
+        {
+            // Given
+            var propInfo = BindingPropertyInfo.Collect<TestModel>().Where(prop => prop.Name.EndsWith("Field"));
+            var model = new TestModel();
 
-			propInfo
-				.Single(prop => prop.PropertyType == typeof(string))
-				.SetValue(model, "nineteen");
+            // When
+            propInfo.Single(prop => prop.PropertyType == typeof(int))
+                .SetValue(model, 42);
 
-			// Then
-			model.IntField.ShouldEqual(42);
-			model.StringField.ShouldEqual("nineteen");
-		}
+            propInfo.Single(prop => prop.PropertyType == typeof(string))
+                .SetValue(model, "nineteen");
 
-		[Fact]
-		public void Should_get_properties()
-		{
-			// Given
-			var propInfo = BindingPropertyInfo.Collect<TestModel>().Where(prop => prop.Name.EndsWith("Property"));
-			var model = new TestModel();
+            // Then
+            model.IntField.ShouldEqual(42);
+            model.StringField.ShouldEqual("nineteen");
+        }
 
-			// When
-			model.IntProperty = 1701;
-			model.StringProperty = "NancyFX Unit Testing";
+        [Fact]
+        public void Should_get_properties()
+        {
+            // Given
+            var propInfo = BindingPropertyInfo.Collect<TestModel>().Where(prop => prop.Name.EndsWith("Property"));
+            var model = new TestModel();
 
-			// Then
-			propInfo
-				.Single(prop => prop.PropertyType == typeof(int))
-				.GetValue(model)
-				.ShouldEqual(1701);
+            // When
+            model.IntProperty = 1701;
+            model.StringProperty = "NancyFX Unit Testing";
 
-			propInfo
-				.Single(prop => prop.PropertyType == typeof(string))
-				.GetValue(model)
-				.ShouldEqual("NancyFX Unit Testing");
-		}
+            // Then
+            propInfo.Single(prop => prop.PropertyType == typeof(int))
+                .GetValue(model)
+                .ShouldEqual(1701);
 
-		[Fact]
-		public void Should_set_properties()
-		{
-			// Given
-			var propInfo = BindingPropertyInfo.Collect<TestModel>().Where(prop => prop.Name.EndsWith("Property"));
-			var model = new TestModel();
+            propInfo.Single(prop => prop.PropertyType == typeof(string))
+                .GetValue(model)
+                .ShouldEqual("NancyFX Unit Testing");
+        }
 
-			// When
-			propInfo
-				.Single(prop => prop.PropertyType == typeof(int))
-				.SetValue(model, 2600);
+        [Fact]
+        public void Should_set_properties()
+        {
+            // Given
+            var propInfo = BindingPropertyInfo.Collect<TestModel>().Where(prop => prop.Name.EndsWith("Property"));
+            var model = new TestModel();
 
-			propInfo
-				.Single(prop => prop.PropertyType == typeof(string))
-				.SetValue(model, "R2D2");
+            // When
+            propInfo.Single(prop => prop.PropertyType == typeof(int))
+                .SetValue(model, 2600);
 
-			// Then
-			model.IntProperty.ShouldEqual(2600);
-			model.StringProperty.ShouldEqual("R2D2");
-		}
+            propInfo.Single(prop => prop.PropertyType == typeof(string))
+                .SetValue(model, "R2D2");
 
-		[Fact]
-		public void Should_collect_all_bindable_members_and_skip_all_others()
-		{
-			// Given
+            // Then
+            model.IntProperty.ShouldEqual(2600);
+            model.StringProperty.ShouldEqual("R2D2");
+        }
 
-			// When
-			var properties = BindingPropertyInfo.Collect<BiggerTestModel>();
+        [Fact]
+        public void Should_collect_all_bindable_members_and_skip_all_others()
+        {
+            // Given
 
-			// Then
-			properties.ShouldHaveCount(16);
+            // When
+            var properties = BindingPropertyInfo.Collect<BiggerTestModel>();
 
-			foreach (var property in properties)
-				property.Name.ShouldStartWith("Bindable");
-		}
+            // Then
+            properties.ShouldHaveCount(16);
 
-		public class TestModel
-		{
-			public int IntField;
-			public string StringField;
+            foreach (var property in properties)
+                property.Name.ShouldStartWith("Bindable");
+        }
 
-			public int IntProperty { get; set; }
-			public string StringProperty { get; set; }
-		}
+        public class TestModel
+        {
+            public int IntField;
+            public string StringField;
 
-		public class BiggerTestModel
-		{
-			public int BindableIntField;
-			public int BindableIntProperty { get; set; }
-			public string BindableStringField;
-			public string BindableStringProperty { get; set; }
-			public TestModel BindableTestModelField;
-			public TestModel BindableTestModelProperty { get; set; }
-			public BiggerTestModel BindableBiggerTestModelField;
-			public BiggerTestModel BindableBiggerTestModelProperty { get; set; }
-			[XmlIgnore]
-			public IEnumerable<int> BindableEnumerableField;
-			[XmlIgnore]
-			public IEnumerable<int> BindableEnumerableProperty { get; set; }
-			public List<string> BindableListField;
-			public List<string> BindableListProperty { get; set; }
-			public double[] BindableArrayField;
-			public double[] BindableArrayProperty { get; set; }
-			public TestModel[] BindableArrayOfObjectsField;
-			public TestModel[] BindableArrayOfObjectsProperty { get; set; }
+            public int IntProperty { get; set; }
+            public string StringProperty { get; set; }
+        }
 
-			public int this[int index]
-			{
-				get { return 0; }
-				set { }
-			}
+        public class BiggerTestModel
+        {
+            public int BindableIntField;
+            public int BindableIntProperty { get; set; }
+            public string BindableStringField;
+            public string BindableStringProperty { get; set; }
+            public TestModel BindableTestModelField;
+            public TestModel BindableTestModelProperty { get; set; }
+            public BiggerTestModel BindableBiggerTestModelField;
+            public BiggerTestModel BindableBiggerTestModelProperty { get; set; }
+            [XmlIgnore]
+            public IEnumerable<int> BindableEnumerableField;
+            [XmlIgnore]
+            public IEnumerable<int> BindableEnumerableProperty { get; set; }
+            public List<string> BindableListField;
+            public List<string> BindableListProperty { get; set; }
+            public double[] BindableArrayField;
+            public double[] BindableArrayProperty { get; set; }
+            public TestModel[] BindableArrayOfObjectsField;
+            public TestModel[] BindableArrayOfObjectsProperty { get; set; }
 
-			public int this[string index, int index2]
-			{
-				get { return 0; }
-				set { }
-			}
+            public int this[int index]
+            {
+                get { return 0; }
+                set { }
+            }
 
-			public readonly int UnbindableReadOnlyField = 74205;
+            public int this[string index, int index2]
+            {
+                get { return 0; }
+                set { }
+            }
 
-			public string UnbindableReadOnlyProperty
-			{
-				get { return "hi"; }
-			}
+            public readonly int UnbindableReadOnlyField = 74205;
 
-			public string UnbindableWriteOnlyProperty
-			{
-				set { }
-			}
+            public string UnbindableReadOnlyProperty
+            {
+                get { return "hi"; }
+            }
 
-			private int UnbindablePrivateField;
+            public string UnbindableWriteOnlyProperty
+            {
+                set { }
+            }
 
-			public static int UnbindableStaticField;
+            private int UnbindablePrivateField;
 
-			public static int UnbindableStaticProperty
-			{
-				get { return 0; }
-				set { }
-			}
-		}
-	}
+            public static int UnbindableStaticField;
+
+            public static int UnbindableStaticProperty
+            {
+                get { return 0; }
+                set { }
+            }
+        }
+    }
 }

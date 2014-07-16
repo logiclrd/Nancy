@@ -1,25 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-
-namespace Nancy.ModelBinding
+﻿namespace Nancy.ModelBinding
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using System.Reflection;
+
 	/// <summary>
 	/// Represents a bindable member of a type, which can be a property or a field.
 	/// </summary>
 	public class BindingPropertyInfo
 	{
-		PropertyInfo _propertyInfo;
-		FieldInfo _fieldInfo;
+		PropertyInfo propertyInfo;
+		FieldInfo fieldInfo;
 
 		/// <summary>
 		/// Gets a reference to the MemberInfo that this BindingPropertyInfo represents. This can be a property or a field.
 		/// </summary>
 		public MemberInfo MemberInfo
 		{
-			get { return _propertyInfo ?? (MemberInfo)_fieldInfo; }
+			get { return this.propertyInfo ?? (MemberInfo)this.fieldInfo; }
 		}
 
 		/// <summary>
@@ -37,10 +36,14 @@ namespace Nancy.ModelBinding
 		{
 			get
 			{
-				if (_propertyInfo != null)
-					return _propertyInfo.PropertyType;
+				if (this.propertyInfo != null)
+				{
+					return this.propertyInfo.PropertyType;
+				}
 				else
-					return _fieldInfo.FieldType;
+				{
+					return this.fieldInfo.FieldType;
+				}
 			}
 		}
 
@@ -51,9 +54,11 @@ namespace Nancy.ModelBinding
 		public BindingPropertyInfo(PropertyInfo propertyInfo)
 		{
 			if (propertyInfo == null)
+			{
 				throw new ArgumentNullException("propertyInfo");
+			}
 
-			_propertyInfo = propertyInfo;
+			this.propertyInfo = propertyInfo;
 		}
 
 		/// <summary>
@@ -63,9 +68,11 @@ namespace Nancy.ModelBinding
 		public BindingPropertyInfo(FieldInfo fieldInfo)
 		{
 			if (fieldInfo == null)
+			{
 				throw new ArgumentNullException("fieldInfo");
+			}
 
-			_fieldInfo = fieldInfo;
+			this.fieldInfo = fieldInfo;
 		}
 
 		/// <summary>
@@ -75,10 +82,14 @@ namespace Nancy.ModelBinding
 		/// <returns>The value for this BindingPropertyInfo's property or field in the specified object.</returns>
 		public object GetValue(object sourceObject)
 		{
-			if (_propertyInfo != null)
-				return _propertyInfo.GetValue(sourceObject, null);
+			if (this.propertyInfo != null)
+			{
+				return this.propertyInfo.GetValue(sourceObject, null);
+			}
 			else
-				return _fieldInfo.GetValue(sourceObject);
+			{
+				return this.fieldInfo.GetValue(sourceObject);
+			}
 		}
 
 		/// <summary>
@@ -88,10 +99,14 @@ namespace Nancy.ModelBinding
 		/// <param name="newValue">The value to assign in the specified object to this BindingPropertyInfo's property or field.</param>
 		public void SetValue(object destinationObject, object newValue)
 		{
-			if (_propertyInfo != null)
-				_propertyInfo.SetValue(destinationObject, newValue, null);
+			if (this.propertyInfo != null)
+			{
+				this.propertyInfo.SetValue(destinationObject, newValue, null);
+			}
 			else
-				_fieldInfo.SetValue(destinationObject, newValue);
+			{
+				this.fieldInfo.SetValue(destinationObject, newValue);
+			}
 		}
 
 		/// <summary>

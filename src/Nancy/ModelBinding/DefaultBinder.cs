@@ -64,7 +64,7 @@ namespace Nancy.ModelBinding
         /// <param name="modelType">Model type to bind to</param>
         /// <param name="instance">Optional existing instance</param>
         /// <param name="configuration">The <see cref="BindingConfig"/> that should be applied during binding.</param>
-        /// <param name="blackList">Blacklisted property names</param>
+        /// <param name="blackList">Blacklisted binding property names</param>
         /// <returns>Bound model</returns>
         public object Bind(NancyContext context, Type modelType, object instance, BindingConfig configuration, params string[] blackList)
         {
@@ -132,7 +132,7 @@ namespace Nancy.ModelBinding
                             {
                                 try
                                 {
-                                    BindProperty(modelProperty, collectionStringValue, bindingContext, genericinstance);
+                                    BindValue(modelProperty, collectionStringValue, bindingContext, genericinstance);
                                 }
                                 catch (PropertyBindingException ex)
                                 {
@@ -154,7 +154,7 @@ namespace Nancy.ModelBinding
                         {
                             try
                             {
-                                BindProperty(modelProperty, stringValue, bindingContext);
+                                BindValue(modelProperty, stringValue, bindingContext);
                             }
                             catch (PropertyBindingException ex)
                             {
@@ -332,7 +332,7 @@ namespace Nancy.ModelBinding
                 Context = context,
                 DestinationType = modelType,
                 Model = CreateModel(modelType, genericType, instance),
-                ValidModelProperties = GetProperties(modelType, genericType, blackList).ToList(),
+                ValidModelProperties = GetBindingProperties(modelType, genericType, blackList).ToList(),
                 RequestData = this.GetDataFields(context),
                 GenericType = genericType,
                 TypeConverters = this.typeConverters.Concat(this.defaults.DefaultTypeConverters),
@@ -363,7 +363,12 @@ namespace Nancy.ModelBinding
                     memberName => (string)dictionary[memberName]);
         }
 
-        private static void BindProperty(BindingPropertyInfo modelProperty, string stringValue, BindingContext context)
+        private static void BindValue(BindingPropertyInfo modelProperty, string stringValue, BindingContext context)
+        {
+            BindValue(modelProperty, stringValue, context, context.Model);
+        }
+
+        private static void BindValue(BindingPropertyInfo modelProperty, string stringValue, BindingContext context, object targetInstance)
         {
             var destinationType = modelProperty.PropertyType;
 
@@ -374,7 +379,7 @@ namespace Nancy.ModelBinding
             {
                 try
                 {
-                    SetPropertyValue(modelProperty, context.Model, typeConverter.Convert(stringValue, destinationType, context));
+                    SetBindingPropertyValue(modelProperty, targetInstance, typeConverter.Convert(stringValue, destinationType, context));
                 }
                 catch (Exception e)
                 {
@@ -383,41 +388,17 @@ namespace Nancy.ModelBinding
             }
             else if (destinationType == typeof(string))
             {
-                SetPropertyValue(modelProperty, context.Model, stringValue);
+                SetBindingPropertyValue(modelProperty, targetInstance, stringValue);
             }
         }
 
-        private static void BindProperty(BindingPropertyInfo modelProperty, string stringValue, BindingContext context, object genericInstance)
-        {
-            var destinationType = modelProperty.PropertyType;
-
-            var typeConverter =
-                context.TypeConverters.FirstOrDefault(c => c.CanConvertTo(destinationType, context));
-
-            if (typeConverter != null)
-            {
-                try
-                {
-                    SetPropertyValue(modelProperty, genericInstance, typeConverter.Convert(stringValue, destinationType, context));
-                }
-                catch (Exception e)
-                {
-                    throw new PropertyBindingException(modelProperty.Name, stringValue, e);
-                }
-            }
-            else if (destinationType == typeof(string))
-            {
-                SetPropertyValue(modelProperty, context.Model, stringValue);
-            }
-        }
-
-        private static void SetPropertyValue(BindingPropertyInfo modelProperty, object model, object value)
+        private static void SetBindingPropertyValue(BindingPropertyInfo modelProperty, object model, object value)
         {
             // TODO - catch reflection exceptions?
             modelProperty.SetValue(model, value);
         }
 
-        private static IEnumerable<BindingPropertyInfo> GetProperties(Type modelType, Type genericType, IEnumerable<string> blackList)
+        private static IEnumerable<BindingPropertyInfo> GetBindingProperties(Type modelType, Type genericType, IEnumerable<string> blackList)
         {
             var blackListHash = new HashSet<string>(blackList, StringComparer.InvariantCulture);
 
