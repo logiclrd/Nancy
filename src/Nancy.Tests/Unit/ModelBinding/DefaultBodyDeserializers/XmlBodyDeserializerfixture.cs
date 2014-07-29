@@ -82,7 +82,7 @@ namespace Nancy.Tests.Unit.ModelBinding.DefaultBodyDeserializers
             var context = new BindingContext()
             {
                 DestinationType = typeof(TestModel),
-                ValidModelProperties = typeof(TestModel).GetProperties().Select(prop => new BindingMemberInfo(prop)).ToArray(),
+                ValidModelProperties = BindingMemberInfo.Collect<TestModel>().ToArray(),
             };
 
             // When
