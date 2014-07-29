@@ -178,7 +178,7 @@ namespace Nancy.ModelBinding
             return bindingContext.Model;
         }
 
-        private bool BindingValueIsValid(string bindingValue, object existingValue, BindingPropertyInfo modelProperty, BindingContext bindingContext)
+        private bool BindingValueIsValid(string bindingValue, object existingValue, BindingMemberInfo modelProperty, BindingContext bindingContext)
         {
             return (!String.IsNullOrEmpty(bindingValue) &&
                     (IsDefaultValue(existingValue, modelProperty.PropertyType) ||
@@ -310,7 +310,7 @@ namespace Nancy.ModelBinding
             }
         }
 
-        private static void CopyValue(BindingPropertyInfo modelProperty, object source, object destination)
+        private static void CopyValue(BindingMemberInfo modelProperty, object source, object destination)
         {
             var newValue = modelProperty.GetValue(source);
 
@@ -332,7 +332,7 @@ namespace Nancy.ModelBinding
                 Context = context,
                 DestinationType = modelType,
                 Model = CreateModel(modelType, genericType, instance),
-                ValidModelProperties = GetBindingProperties(modelType, genericType, blackList).ToList(),
+                ValidModelProperties = GetBindingMembers(modelType, genericType, blackList).ToList(),
                 RequestData = this.GetDataFields(context),
                 GenericType = genericType,
                 TypeConverters = this.typeConverters.Concat(this.defaults.DefaultTypeConverters),
@@ -363,12 +363,12 @@ namespace Nancy.ModelBinding
                     memberName => (string)dictionary[memberName]);
         }
 
-        private static void BindValue(BindingPropertyInfo modelProperty, string stringValue, BindingContext context)
+        private static void BindValue(BindingMemberInfo modelProperty, string stringValue, BindingContext context)
         {
             BindValue(modelProperty, stringValue, context, context.Model);
         }
 
-        private static void BindValue(BindingPropertyInfo modelProperty, string stringValue, BindingContext context, object targetInstance)
+        private static void BindValue(BindingMemberInfo modelProperty, string stringValue, BindingContext context, object targetInstance)
         {
             var destinationType = modelProperty.PropertyType;
 
@@ -379,7 +379,7 @@ namespace Nancy.ModelBinding
             {
                 try
                 {
-                    SetBindingPropertyValue(modelProperty, targetInstance, typeConverter.Convert(stringValue, destinationType, context));
+                    SetBindingMemberValue(modelProperty, targetInstance, typeConverter.Convert(stringValue, destinationType, context));
                 }
                 catch (Exception e)
                 {
@@ -388,21 +388,21 @@ namespace Nancy.ModelBinding
             }
             else if (destinationType == typeof(string))
             {
-                SetBindingPropertyValue(modelProperty, targetInstance, stringValue);
+                SetBindingMemberValue(modelProperty, targetInstance, stringValue);
             }
         }
 
-        private static void SetBindingPropertyValue(BindingPropertyInfo modelProperty, object model, object value)
+        private static void SetBindingMemberValue(BindingMemberInfo modelProperty, object model, object value)
         {
             // TODO - catch reflection exceptions?
             modelProperty.SetValue(model, value);
         }
 
-        private static IEnumerable<BindingPropertyInfo> GetBindingProperties(Type modelType, Type genericType, IEnumerable<string> blackList)
+        private static IEnumerable<BindingMemberInfo> GetBindingMembers(Type modelType, Type genericType, IEnumerable<string> blackList)
         {
             var blackListHash = new HashSet<string>(blackList, StringComparer.InvariantCulture);
 
-            return BindingPropertyInfo.Collect(genericType ?? modelType)
+            return BindingMemberInfo.Collect(genericType ?? modelType)
                 .Where(member => !blackListHash.Contains(member.Name));
         }
 

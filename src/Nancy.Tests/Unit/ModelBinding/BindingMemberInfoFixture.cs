@@ -8,7 +8,7 @@
     using Xunit;
     using Xunit.Sdk;
 
-    public class BindingPropertyInfoFixture
+    public class BindingMemberInfoFixture
     {
         [Fact]
         public void Should_return_MemberInfo_for_properties_or_fields()
@@ -19,8 +19,8 @@
             var underlyingPropertyInfo = type.GetProperties().First();
 
             // When
-            var fieldInfo = new BindingPropertyInfo(underlyingFieldInfo);
-            var propertyInfo = new BindingPropertyInfo(underlyingPropertyInfo);
+            var fieldInfo = new BindingMemberInfo(underlyingFieldInfo);
+            var propertyInfo = new BindingMemberInfo(underlyingPropertyInfo);
 
             // Then
             fieldInfo.MemberInfo.ShouldEqual(underlyingFieldInfo);
@@ -36,8 +36,8 @@
             var underlyingPropertyInfo = type.GetProperties().First();
 
             // When
-            var fieldInfo = new BindingPropertyInfo(underlyingFieldInfo);
-            var propertyInfo = new BindingPropertyInfo(underlyingPropertyInfo);
+            var fieldInfo = new BindingMemberInfo(underlyingFieldInfo);
+            var propertyInfo = new BindingMemberInfo(underlyingPropertyInfo);
 
             // Then
             fieldInfo.Name.ShouldEqual(underlyingFieldInfo.Name);
@@ -48,7 +48,7 @@
         public void Should_return_PropertyType_for_properties_or_fields()
         {
             // Given
-            var properties = BindingPropertyInfo.Collect<TestModel>();
+            var properties = BindingMemberInfo.Collect<TestModel>();
 
             // When
 
@@ -76,7 +76,7 @@
         public void Should_get_fields()
         {
             // Given
-            var propInfo = BindingPropertyInfo.Collect<TestModel>().Where(prop => prop.Name.EndsWith("Field"));
+            var propInfo = BindingMemberInfo.Collect<TestModel>().Where(prop => prop.Name.EndsWith("Field"));
             var model = new TestModel();
 
             // When
@@ -97,7 +97,7 @@
         public void Should_set_fields()
         {
             // Given
-            var propInfo = BindingPropertyInfo.Collect<TestModel>().Where(prop => prop.Name.EndsWith("Field"));
+            var propInfo = BindingMemberInfo.Collect<TestModel>().Where(prop => prop.Name.EndsWith("Field"));
             var model = new TestModel();
 
             // When
@@ -116,7 +116,7 @@
         public void Should_get_properties()
         {
             // Given
-            var propInfo = BindingPropertyInfo.Collect<TestModel>().Where(prop => prop.Name.EndsWith("Property"));
+            var propInfo = BindingMemberInfo.Collect<TestModel>().Where(prop => prop.Name.EndsWith("Property"));
             var model = new TestModel();
 
             // When
@@ -137,7 +137,7 @@
         public void Should_set_properties()
         {
             // Given
-            var propInfo = BindingPropertyInfo.Collect<TestModel>().Where(prop => prop.Name.EndsWith("Property"));
+            var propInfo = BindingMemberInfo.Collect<TestModel>().Where(prop => prop.Name.EndsWith("Property"));
             var model = new TestModel();
 
             // When
@@ -158,7 +158,7 @@
             // Given
 
             // When
-            var properties = BindingPropertyInfo.Collect<BiggerTestModel>();
+            var properties = BindingMemberInfo.Collect<BiggerTestModel>();
 
             // Then
             properties.ShouldHaveCount(16);

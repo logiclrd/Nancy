@@ -8,13 +8,13 @@
     /// <summary>
     /// Represents a bindable member of a type, which can be a property or a field.
     /// </summary>
-    public class BindingPropertyInfo
+    public class BindingMemberInfo
     {
         PropertyInfo propertyInfo;
         FieldInfo fieldInfo;
 
         /// <summary>
-        /// Gets a reference to the MemberInfo that this BindingPropertyInfo represents. This can be a property or a field.
+        /// Gets a reference to the MemberInfo that this BindingMemberInfo represents. This can be a property or a field.
         /// </summary>
         public MemberInfo MemberInfo
         {
@@ -22,7 +22,7 @@
         }
 
         /// <summary>
-        /// Gets the name of the property or field represented by this BindingPropertyInfo.
+        /// Gets the name of the property or field represented by this BindingMemberInfo.
         /// </summary>
         public string Name
         {
@@ -30,7 +30,7 @@
         }
 
         /// <summary>
-        /// Gets the data type of the property or field represented by this BindingPropertyInfo.
+        /// Gets the data type of the property or field represented by this BindingMemberInfo.
         /// </summary>
         public Type PropertyType
         {
@@ -48,10 +48,10 @@
         }
 
         /// <summary>
-        /// Constructs a BindingPropertyInfo instance for a property.
+        /// Constructs a BindingMemberInfo instance for a property.
         /// </summary>
         /// <param name="propertyInfo">The bindable property to represent.</param>
-        public BindingPropertyInfo(PropertyInfo propertyInfo)
+        public BindingMemberInfo(PropertyInfo propertyInfo)
         {
             if (propertyInfo == null)
             {
@@ -62,10 +62,10 @@
         }
 
         /// <summary>
-        /// Constructs a BindingPropertyInfo instance for a field.
+        /// Constructs a BindingMemberInfo instance for a field.
         /// </summary>
         /// <param name="fieldInfo">The bindable field to represent.</param>
-        public BindingPropertyInfo(FieldInfo fieldInfo)
+        public BindingMemberInfo(FieldInfo fieldInfo)
         {
             if (fieldInfo == null)
             {
@@ -76,10 +76,10 @@
         }
 
         /// <summary>
-        /// Gets the value from a specified object associated with the property or field represented by this BindingPropertyInfo.
+        /// Gets the value from a specified object associated with the property or field represented by this BindingMemberInfo.
         /// </summary>
         /// <param name="sourceObject">The object whose property or field should be retrieved.</param>
-        /// <returns>The value for this BindingPropertyInfo's property or field in the specified object.</returns>
+        /// <returns>The value for this BindingMemberInfo's property or field in the specified object.</returns>
         public object GetValue(object sourceObject)
         {
             if (this.propertyInfo != null)
@@ -93,10 +93,10 @@
         }
 
         /// <summary>
-        /// Sets the value from a specified object associated with the property or field represented by this BindingPropertyInfo.
+        /// Sets the value from a specified object associated with the property or field represented by this BindingMemberInfo.
         /// </summary>
         /// <param name="destinationObject">The object whose property or field should be assigned.</param>
-        /// <param name="newValue">The value to assign in the specified object to this BindingPropertyInfo's property or field.</param>
+        /// <param name="newValue">The value to assign in the specified object to this BindingMemberInfo's property or field.</param>
         public void SetValue(object destinationObject, object newValue)
         {
             if (this.propertyInfo != null)
@@ -114,7 +114,7 @@
         /// </summary>
         /// <typeparam name="T">The type to enumerate.</typeparam>
         /// <returns>Bindable properties.</returns>
-        public static IEnumerable<BindingPropertyInfo> Collect<T>()
+        public static IEnumerable<BindingMemberInfo> Collect<T>()
         {
             return Collect(typeof(T));
         }
@@ -124,15 +124,15 @@
         /// </summary>
         /// <param name="type">The type to enumerate.</param>
         /// <returns>Bindable properties.</returns>
-        public static IEnumerable<BindingPropertyInfo> Collect(Type type)
+        public static IEnumerable<BindingMemberInfo> Collect(Type type)
         {
             var fromProperties = type
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanRead && p.CanWrite)
                 .Where(property => !property.GetIndexParameters().Any())
-                .Select(property => new BindingPropertyInfo(property));
+                .Select(property => new BindingMemberInfo(property));
 
             var fromFields = type.GetFields(BindingFlags.Public | BindingFlags.Instance).Where(f => !f.IsInitOnly)
-                .Select(field => new BindingPropertyInfo(field));
+                .Select(field => new BindingMemberInfo(field));
 
             return fromProperties.Concat(fromFields);
         }

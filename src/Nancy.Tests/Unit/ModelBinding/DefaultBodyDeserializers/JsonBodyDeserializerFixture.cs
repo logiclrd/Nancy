@@ -115,7 +115,7 @@ namespace Nancy.Tests.Unit.ModelBinding.DefaultBodyDeserializers
             var context = new BindingContext()
             {
                 DestinationType = typeof(TimeSpan),
-                ValidModelProperties = BindingPropertyInfo.Collect<TimeSpan>().ToList(),
+                ValidModelProperties = BindingMemberInfo.Collect<TimeSpan>().ToList(),
             };
 
             // When
@@ -135,7 +135,7 @@ namespace Nancy.Tests.Unit.ModelBinding.DefaultBodyDeserializers
             var context = new BindingContext()
             {
                 DestinationType = typeof(TestModel),
-                ValidModelProperties = BindingPropertyInfo.Collect<TestModel>().ToList(),
+                ValidModelProperties = BindingMemberInfo.Collect<TestModel>().ToList(),
             };
 
             var model =
@@ -174,7 +174,7 @@ namespace Nancy.Tests.Unit.ModelBinding.DefaultBodyDeserializers
             var context = new BindingContext()
             {
                 DestinationType = typeof(TestModel),
-                ValidModelProperties = BindingPropertyInfo.Collect<TestModel>().ToList(),
+                ValidModelProperties = BindingMemberInfo.Collect<TestModel>().ToList(),
             };
 
             var model =
